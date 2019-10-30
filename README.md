@@ -44,6 +44,17 @@ response phase the audit_log middleware will send the log.
        'django_audit_log.middleware.AuditLogMiddleware',
     ]
     ```
+   
+4. When using the Django Rest Framework, let your viewsets extend `AuditLogReadOnlyViewset`
+or `AuditLogViewSet`. This will automatically add context to the audit log regarding
+filters, results and executed actions (see - [Django Rest Framework](#django-rest-framework)).
+
+    ```python
+    class MyViewSet(AuditLogViewSet):
+        queryset = SomeModel.objects.all()
+    ```
+
+
 
 At this point all requests/responses will be logged. For providing extra context
 (which you are strongly urged to do so), see next chapters.
