@@ -12,6 +12,13 @@ returning a response the app can easily provide extra context. In the process
 response phase the audit_log middleware will send the log. 
 
 
+## Links
+- [Quick Start](#quick-start)
+- [Default Context Info](#default-context-info)
+- [Custom Optional Context Info](#custom-optional-context-info)
+- [Django Rest Framework](#django-rest-framework)
+
+
 ## Quick start
 
 1. Install using pip
@@ -138,4 +145,24 @@ These methods will add the following details to the log:
 ```json
 "type": "DEBUG|INFO|WARNING|ERROR|etc",
 "message": "log message"
+```
+
+## Django Rest Framework
+Two base-ViewSets are available if you use the Django Rest Framework.
+
+The `AuditLogReadOnlyViewSet` extends the `ReadOnlyModelViewSet` and overrides
+the `retrieve()` and `list()` methods. The `AuditLogViewSet` extends the `AuditLogReadOnlyViewSet`
+and overrides the remaining (non-read-only) methods `create()`, `update()` and `destroy()`.
+
+Our classes inspect the request and will automatically add extra context information
+to the audit log. This context information provides info regarding filters, results
+and the action that is being performed.
+
+Note that by default `list()` will not add the results to the log, unless the `audit_log_list_response`
+attribute is set. Only do so when the amount of data inside the list response is suitable
+to store inside a log entry.
+
+```python
+class MyViewSet(AuditLogViewSet):
+    audit_log_list_response = True
 ```
