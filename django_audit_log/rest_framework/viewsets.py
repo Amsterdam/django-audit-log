@@ -6,12 +6,21 @@ class AuditLogReadOnlyViewSet(ReadOnlyModelViewSet):
 
     audit_log_list_response = False
 
-    def _get_filter_kwargs(self):
+    def _get_lookup_kwargs(self):
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
-        return {self.lookup_field: self.kwargs.get(lookup_url_kwarg, "")}
+        kwargs = getattr(self, 'kwargs', {})    # kwargs is set during dispatch(). Prevent possible attribute errors
+        return {self.lookup_field: kwargs.get(lookup_url_kwarg, "")}
+
+    def _get_filter_kwargs(self, request):
+        search_terms = []
+        for backend in list(self.filter_backends):
+            if issubclass(backend, SearchFilter):
+                search_terms += backend().get_search_terms(request)
+
+        return {str(getattr(self, 'search_fields', [])): search_terms}
 
     def _get_model_name(self, queryset=None):
-        if not queryset:
+        if queryset is None:
             queryset = self.get_queryset()
         return queryset.model.__name__
 
@@ -19,10 +28,9 @@ class AuditLogReadOnlyViewSet(ReadOnlyModelViewSet):
         response = super().retrieve(request, *args, **kwargs)
 
         model = self._get_model_name()
-        request.audit_log \
-            .set_filter(object_name=model, kwargs=self._get_filter_kwargs()) \
-            .set_results(response.data) \
-            .info(f"Retrieve {model}")
+        request.audit_log.set_filter(object_name=model, kwargs=self._get_lookup_kwargs())
+        request.audit_log.set_results(response.data)
+        request.audit_log.info(f"Retrieve {model}")
 
         return response
 
@@ -30,16 +38,9 @@ class AuditLogReadOnlyViewSet(ReadOnlyModelViewSet):
         response = super().list(request, *args, **kwargs)
 
         model = self._get_model_name()
-        search_terms = []
-        for backend in list(self.filter_backends):
-            if type(backend) == type(SearchFilter):
-                search_terms += backend().get_search_terms(request)
-
-        filter_kwargs = {str(getattr(self, 'search_fields', '')): search_terms}
-
-        request.audit_log \
-            .set_filter(object_name=model, kwargs=filter_kwargs) \
-            .info(f"List {model}")
+        filter_kwargs = self._get_filter_kwargs(request)
+        request.audit_log.set_filter(object_name=model, kwargs=filter_kwargs)
+        request.audit_log.info(f"List {model}")
 
         if self.audit_log_list_response:
             request.audit_log.set_results(response.data)
@@ -55,9 +56,8 @@ class AuditLogViewSet(AuditLogReadOnlyViewSet, ModelViewSet):
         response = super().create(request, *args, **kwargs)
 
         model = self._get_model_name()
-        request.audit_log \
-            .set_results(response.data) \
-            .info(f"Created {model} object")
+        request.audit_log.set_results(response.data)
+        request.audit_log.info(f"Created {model} object")
 
         return response
 
@@ -67,10 +67,9 @@ class AuditLogViewSet(AuditLogReadOnlyViewSet, ModelViewSet):
 
         model = self._get_model_name()
         message = f"Partial update of {model}" if partial else f"Update of {model}"
-        request.audit_log \
-            .set_filter(object_name=model, kwargs=self._get_filter_kwargs()) \
-            .set_results(response.data) \
-            .info(message)
+        request.audit_log.set_filter(object_name=model, kwargs=self._get_lookup_kwargs())
+        request.audit_log.set_results(response.data)
+        request.audit_log.info(message)
 
         return response
 
@@ -78,10 +77,9 @@ class AuditLogViewSet(AuditLogReadOnlyViewSet, ModelViewSet):
         response = super().destroy(request, *args, **kwargs)
 
         model = self._get_model_name()
-        request.audit_log \
-            .set_filter(object_name=model, kwargs=self._get_filter_kwargs()) \
-            .set_results(response.data) \
-            .info(f"Destroy {model}")
+        request.audit_log.set_filter(object_name=model, kwargs=self._get_lookup_kwargs())
+        request.audit_log.set_results(response.data)
+        request.audit_log.info(f"Destroy {model}")
 
         return response
 
