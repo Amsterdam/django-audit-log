@@ -52,8 +52,6 @@ class AuditLogReadOnlyViewSet(ReadOnlyModelViewSet):
 
 class AuditLogViewSet(AuditLogReadOnlyViewSet, ModelViewSet):
 
-    audit_log_list_response = False
-
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
 
