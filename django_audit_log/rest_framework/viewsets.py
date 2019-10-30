@@ -27,23 +27,25 @@ class AuditLogReadOnlyViewSet(ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         response = super().retrieve(request, *args, **kwargs)
 
-        model = self._get_model_name()
-        request.audit_log.set_filter(object_name=model, kwargs=self._get_lookup_kwargs())
-        request.audit_log.set_results(response.data)
-        request.audit_log.info(f"Retrieve {model}")
+        if hasattr(request, 'audit_log'):
+            model = self._get_model_name()
+            request.audit_log.set_filter(object_name=model, kwargs=self._get_lookup_kwargs())
+            request.audit_log.set_results(response.data)
+            request.audit_log.info(f"Retrieve {model}")
 
         return response
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
 
-        model = self._get_model_name()
-        filter_kwargs = self._get_filter_kwargs(request)
-        request.audit_log.set_filter(object_name=model, kwargs=filter_kwargs)
-        request.audit_log.info(f"List {model}")
+        if hasattr(request, 'audit_log'):
+            model = self._get_model_name()
+            filter_kwargs = self._get_filter_kwargs(request)
+            request.audit_log.set_filter(object_name=model, kwargs=filter_kwargs)
+            request.audit_log.info(f"List {model}")
 
-        if self.audit_log_list_response:
-            request.audit_log.set_results(response.data)
+            if self.audit_log_list_response:
+                request.audit_log.set_results(response.data)
 
         return response
 
@@ -55,9 +57,10 @@ class AuditLogViewSet(AuditLogReadOnlyViewSet, ModelViewSet):
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
 
-        model = self._get_model_name()
-        request.audit_log.set_results(response.data)
-        request.audit_log.info(f"Created {model} object")
+        if hasattr(request, 'audit_log'):
+            model = self._get_model_name()
+            request.audit_log.set_results(response.data)
+            request.audit_log.info(f"Created {model} object")
 
         return response
 
@@ -65,21 +68,23 @@ class AuditLogViewSet(AuditLogReadOnlyViewSet, ModelViewSet):
         partial = kwargs.get('partial', False)
         response = super().update(request, *args, **kwargs)
 
-        model = self._get_model_name()
-        message = f"Partial update of {model}" if partial else f"Update of {model}"
-        request.audit_log.set_filter(object_name=model, kwargs=self._get_lookup_kwargs())
-        request.audit_log.set_results(response.data)
-        request.audit_log.info(message)
+        if hasattr(request, 'audit_log'):
+            model = self._get_model_name()
+            message = f"Partial update of {model}" if partial else f"Update of {model}"
+            request.audit_log.set_filter(object_name=model, kwargs=self._get_lookup_kwargs())
+            request.audit_log.set_results(response.data)
+            request.audit_log.info(message)
 
         return response
 
     def destroy(self, request, *args, **kwargs):
         response = super().destroy(request, *args, **kwargs)
 
-        model = self._get_model_name()
-        request.audit_log.set_filter(object_name=model, kwargs=self._get_lookup_kwargs())
-        request.audit_log.set_results(response.data)
-        request.audit_log.info(f"Destroy {model}")
+        if hasattr(request, 'audit_log'):
+            model = self._get_model_name()
+            request.audit_log.set_filter(object_name=model, kwargs=self._get_lookup_kwargs())
+            request.audit_log.set_results(response.data)
+            request.audit_log.info(f"Destroy {model}")
 
         return response
 
