@@ -107,7 +107,7 @@ to the request by the middleware. Therefore every view can simply access
 it via the request object.
 
 ### Filter 
-`AuditLog.set_filter(self, object_name, fields, terms)` allows to provide
+`request.audit_log.set_filter(self, object_name, fields, terms)` allows to provide
 info on the requested type of object and the filters that have been used 
 (a user searches for 'terms', which are matched on specific 'fields' of the 
 'object').
@@ -123,7 +123,7 @@ This method will add the following details to the log:
 ```
 
 ### Results
-`AuditLog.set_results(self, results)` allows to pass a json dict
+`request.audit_log.set_results(self, results)` allows to pass a json dict
 detailing exactly what results have been returned to the user. 
 
 It is up to the developer to decide whether the amount of 
@@ -144,11 +144,11 @@ what the request is actually doing. This is done by calling
 one of the following methods:
 
 ```python
-AuditLog.debug(self, msg)
-AuditLog.info(self, msg)
-AuditLog.warning(self, msg)
-AuditLog.error(self, msg)
-AuditLog.critical(self, msg)
+request.audit_log.debug(self, msg)
+request.audit_log.info(self, msg)
+request.audit_log.warning(self, msg)
+request.audit_log.error(self, msg)
+request.audit_log.critical(self, msg)
 ```
     
 These methods will add the following details to the log:
