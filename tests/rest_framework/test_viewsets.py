@@ -74,14 +74,14 @@ class TestAuditLogReadOnlyViewset(TestCase):
     @mock.patch('rest_framework.mixins.RetrieveModelMixin.retrieve')
     def test_retrieve(self, mocked_retrieve):
         mocked_retrieve.return_value = Response(data='test')
-        view_set = DynamicReadOnlyViewSet(queryset=User.objects.all(), kwargs={}, lookup_field='pk')
+        view_set = DynamicReadOnlyViewSet(queryset=User.objects.all(), kwargs={'pk': '1'}, lookup_field='pk')
         request = self.factory.get('/')
 
         with mock.patch('django_audit_log.logger.AuditLogger') as mocked_logger:
             request.audit_log = mocked_logger
             response = view_set.retrieve(request)
             self.assertEqual(response.data, 'test')
-            mocked_logger.set_filter.assert_called_with(object_name='User', kwargs={'pk': ''})
+            mocked_logger.set_filter.assert_called_with(object_name='User', kwargs={'pk': '1'})
             mocked_logger.set_results.assert_called_with('test')
             mocked_logger.info.assert_called_with("Retrieve User")
 
@@ -160,14 +160,14 @@ class TestAuditLogViewSet(TestCase):
     @mock.patch('rest_framework.mixins.UpdateModelMixin.update')
     def test_update(self, mocked_update):
         mocked_update.return_value = Response(data='test')
-        view_set = DynamicViewSet(queryset=User.objects.all(), kwargs={}, lookup_field='pk')
+        view_set = DynamicViewSet(queryset=User.objects.all(), kwargs={'pk': '1'}, lookup_field='pk')
         request = self.factory.get('/')
 
         with mock.patch('django_audit_log.logger.AuditLogger') as mocked_logger:
             request.audit_log = mocked_logger
             response = view_set.update(request)
             self.assertEqual(response.data, 'test')
-            mocked_logger.set_filter.assert_called_with(object_name='User', kwargs={'pk': ''})
+            mocked_logger.set_filter.assert_called_with(object_name='User', kwargs={'pk': '1'})
             mocked_logger.set_results.assert_called_with('test')
             mocked_logger.info.assert_called_with("Update of User")
 
@@ -182,7 +182,7 @@ class TestAuditLogViewSet(TestCase):
     @mock.patch('rest_framework.mixins.DestroyModelMixin.destroy')
     def test_destroy(self, mocked_destroy):
         mocked_destroy.return_value = Response(status=204)
-        view_set = DynamicViewSet(queryset=User.objects.all(), kwargs={}, lookup_field='pk')
+        view_set = DynamicViewSet(queryset=User.objects.all(), kwargs={'pk': '1'}, lookup_field='pk')
         request = self.factory.get('/')
 
         with mock.patch('django_audit_log.logger.AuditLogger') as mocked_logger:
@@ -190,7 +190,7 @@ class TestAuditLogViewSet(TestCase):
             response = view_set.destroy(request)
             self.assertEqual(response.data, None)
             self.assertEqual(response.status_code, 204)
-            mocked_logger.set_filter.assert_called_with(object_name='User', kwargs={'pk': ''})
+            mocked_logger.set_filter.assert_called_with(object_name='User', kwargs={'pk': '1'})
             mocked_logger.set_results.assert_called_with(None)
             mocked_logger.info.assert_called_with("Destroy User")
 
